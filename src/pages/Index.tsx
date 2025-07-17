@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import Icon from '@/components/ui/icon';
 
 interface FamilyMember {
@@ -137,40 +137,87 @@ const Index = () => {
     return date.toLocaleDateString('ru-RU');
   };
 
-  const FamilyTreeComponent = ({ familyTree }: { familyTree: FamilyMember[] }) => {
-    return (
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-yellow-400 mb-4">Генеалогическое дерево</h3>
-        <div className="grid gap-3">
-          {familyTree.map((member) => (
-            <div key={member.id} className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg">
-              <div className="w-10 h-10 bg-yellow-400/20 rounded-full flex items-center justify-center border border-yellow-400/50">
-                <Icon name="User" className="h-5 w-5 text-yellow-400" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-medium">{member.name}</p>
-                <p className="text-sm text-slate-400">{member.relation}</p>
-                {member.birthDate && (
-                  <p className="text-xs text-slate-500">
-                    {formatDate(member.birthDate)} 
-                    {member.deathDate && ` - ${formatDate(member.deathDate)}`}
-                    {member.isAlive && ' - живой'}
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center">
-                {member.isAlive ? (
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                ) : (
-                  <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-                )}
-              </div>
+  const MemorialCard = ({ memorial }: { memorial: Memorial }) => (
+    <Card className="bg-slate-800/50 border-slate-600 text-white mb-6 hover:bg-slate-800/70 transition-colors">
+      <CardHeader>
+        <div className="flex items-start space-x-4">
+          {memorial.photo && (
+            <div className="flex-shrink-0">
+              <img 
+                src={memorial.photo} 
+                alt={memorial.name}
+                className="w-20 h-20 rounded-lg object-cover border-2 border-yellow-400/50"
+              />
             </div>
-          ))}
+          )}
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-2">
+              <CardTitle className="text-yellow-400 text-lg">{memorial.name}</CardTitle>
+              <Badge variant="secondary" className="bg-yellow-400/20 text-yellow-400">
+                {memorial.profession}
+              </Badge>
+            </div>
+            <CardDescription className="text-slate-300 mb-2">
+              {formatDate(memorial.birthDate)} - {formatDate(memorial.deathDate)}
+            </CardDescription>
+            <div className="flex items-center space-x-2 mb-2">
+              <Icon name="MapPin" className="h-4 w-4 text-yellow-400" />
+              <span className="text-sm text-slate-300">{memorial.graveLocation}</span>
+            </div>
+            <p className="text-sm text-slate-400">{memorial.description}</p>
+          </div>
         </div>
-      </div>
-    );
-  };
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Биография */}
+        <div>
+          <h4 className="text-yellow-400 font-semibold mb-2 flex items-center">
+            <Icon name="BookOpen" className="h-4 w-4 mr-2" />
+            Биография
+          </h4>
+          <p className="text-sm text-slate-300 leading-relaxed">{memorial.biography}</p>
+        </div>
+        
+        <Separator className="bg-slate-600" />
+        
+        {/* Генеалогическое дерево */}
+        {memorial.familyTree && memorial.familyTree.length > 0 && (
+          <div>
+            <h4 className="text-yellow-400 font-semibold mb-3 flex items-center">
+              <Icon name="Users" className="h-4 w-4 mr-2" />
+              Семья
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {memorial.familyTree.map((member) => (
+                <div key={member.id} className="flex items-center space-x-3 p-3 bg-slate-700/30 rounded-lg">
+                  <div className="w-8 h-8 bg-yellow-400/20 rounded-full flex items-center justify-center border border-yellow-400/50">
+                    <Icon name="User" className="h-4 w-4 text-yellow-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-medium text-sm">{member.name}</p>
+                    <p className="text-xs text-slate-400">{member.relation}</p>
+                    {member.birthDate && (
+                      <p className="text-xs text-slate-500">
+                        {formatDate(member.birthDate)}
+                        {member.deathDate && ` - ${formatDate(member.deathDate)}`}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    {member.isAlive ? (
+                      <div className="w-2 h-2 bg-green-400 rounded-full" title="Живой"></div>
+                    ) : (
+                      <div className="w-2 h-2 bg-red-400 rounded-full" title="Умерший"></div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a2e] via-[#16213e] to-[#1a1a2e] relative overflow-hidden">
@@ -268,7 +315,7 @@ const Index = () => {
 
       {/* Интерактивная карта */}
       <div className="relative z-10 flex-1 p-6">
-        <div className="relative h-96 bg-slate-900/30 rounded-lg border border-slate-700 overflow-hidden">
+        <div className="relative h-64 bg-slate-900/30 rounded-lg border border-slate-700 overflow-hidden mb-8">
           {/* Звезды-души на карте */}
           {filteredMemorials.map((memorial) => (
             <div
@@ -293,12 +340,33 @@ const Index = () => {
           {/* Фоновая сетка */}
           <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
         </div>
+
+        {/* Список всех захоронений */}
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">
+            Захоронения на кладбище
+          </h2>
+          
+          {filteredMemorials.length === 0 ? (
+            <div className="text-center py-12">
+              <Icon name="Search" className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+              <p className="text-slate-400 text-lg">Ничего не найдено</p>
+              <p className="text-slate-500 text-sm">Попробуйте изменить поисковый запрос</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {filteredMemorials.map((memorial) => (
+                <MemorialCard key={memorial.id} memorial={memorial} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Расширенная карточка выбранного захоронения */}
+      {/* Модальное окно для выбранного захоронения */}
       {selectedMemorial && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="bg-slate-800/95 border-slate-600 text-white max-w-2xl w-full max-h-[90vh] overflow-hidden">
+          <Card className="bg-slate-800/95 border-slate-600 text-white max-w-md w-full">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div className="flex items-center space-x-4">
@@ -314,9 +382,6 @@ const Index = () => {
                     <CardDescription className="text-slate-300">
                       {formatDate(selectedMemorial.birthDate)} - {formatDate(selectedMemorial.deathDate)}
                     </CardDescription>
-                    {selectedMemorial.profession && (
-                      <p className="text-sm text-slate-400 mt-1">{selectedMemorial.profession}</p>
-                    )}
                   </div>
                 </div>
                 <Button
@@ -330,92 +395,21 @@ const Index = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="info" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-slate-700/50">
-                  <TabsTrigger value="info" className="text-white">Информация</TabsTrigger>
-                  <TabsTrigger value="biography" className="text-white">Биография</TabsTrigger>
-                  <TabsTrigger value="family" className="text-white">Семья</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="info" className="space-y-4 mt-4">
-                  <div className="flex items-center space-x-2">
-                    <Icon name="Calendar" className="h-4 w-4 text-yellow-400" />
-                    <span className="text-sm text-slate-300">
-                      Прожил {new Date(selectedMemorial.deathDate).getFullYear() - new Date(selectedMemorial.birthDate).getFullYear()} лет
-                    </span>
-                  </div>
-                  {selectedMemorial.graveLocation && (
-                    <div className="flex items-center space-x-2">
-                      <Icon name="MapPin" className="h-4 w-4 text-yellow-400" />
-                      <span className="text-sm text-slate-300">{selectedMemorial.graveLocation}</span>
-                    </div>
-                  )}
-                  {selectedMemorial.description && (
-                    <div className="flex items-start space-x-2">
-                      <Icon name="Heart" className="h-4 w-4 text-yellow-400 mt-0.5" />
-                      <p className="text-sm text-slate-300">{selectedMemorial.description}</p>
-                    </div>
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="biography" className="mt-4">
-                  <ScrollArea className="h-48">
-                    <div className="space-y-2">
-                      <div className="flex items-start space-x-2">
-                        <Icon name="BookOpen" className="h-4 w-4 text-yellow-400 mt-0.5" />
-                        <p className="text-sm text-slate-300 leading-relaxed">
-                          {selectedMemorial.biography || 'Информация о биографии отсутствует.'}
-                        </p>
-                      </div>
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
-                
-                <TabsContent value="family" className="mt-4">
-                  <ScrollArea className="h-48">
-                    {selectedMemorial.familyTree && selectedMemorial.familyTree.length > 0 ? (
-                      <FamilyTreeComponent familyTree={selectedMemorial.familyTree} />
-                    ) : (
-                      <p className="text-slate-400 text-center py-8">Информация о родственниках отсутствует</p>
-                    )}
-                  </ScrollArea>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Список результатов поиска */}
-      {searchTerm && (
-        <div className="fixed bottom-4 right-4 w-80 max-h-96 overflow-y-auto bg-slate-800/95 rounded-lg border border-slate-600 p-4 z-40">
-          <h3 className="text-white font-semibold mb-3">Результаты поиска:</h3>
-          <div className="space-y-2">
-            {filteredMemorials.map((memorial) => (
-              <div
-                key={memorial.id}
-                className="p-3 bg-slate-700/50 rounded cursor-pointer hover:bg-slate-700 transition-colors"
-                onClick={() => setSelectedMemorial(memorial)}
-              >
-                <div className="flex items-center space-x-3">
-                  {memorial.photo && (
-                    <img 
-                      src={memorial.photo} 
-                      alt={memorial.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  )}
-                  <div>
-                    <p className="text-yellow-400 font-medium">{memorial.name}</p>
-                    <p className="text-xs text-slate-400">{memorial.profession}</p>
-                    <p className="text-xs text-slate-300">
-                      {formatDate(memorial.birthDate)} - {formatDate(memorial.deathDate)}
-                    </p>
-                  </div>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Icon name="MapPin" className="h-4 w-4 text-yellow-400" />
+                  <span className="text-sm text-slate-300">{selectedMemorial.graveLocation}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Icon name="Briefcase" className="h-4 w-4 text-yellow-400" />
+                  <span className="text-sm text-slate-300">{selectedMemorial.profession}</span>
+                </div>
+                <div className="text-center">
+                  <p className="text-slate-300 text-sm">Нажмите на звезду на карте для просмотра полной информации</p>
                 </div>
               </div>
-            ))}
-          </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
